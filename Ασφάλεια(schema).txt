@@ -1,0 +1,112 @@
+CREATE DATABASE "Insurance";
+
+CREATE SCHEMA "Ασφάλεια"
+    AUTHORIZATION postgres;
+
+CREATE TABLE IF NOT EXISTS "Ασφάλεια"."Κατοικία" (
+  "Ονοματεπώνυμο" VARCHAR(45) NOT NULL,
+  "Διεύθυνση" VARCHAR(45) NOT NULL,
+  "ΤΚ" INT NOT NULL,
+  "Πόλη" VARCHAR(45) NOT NULL,
+  "Χώρα" VARCHAR(45) NOT NULL,
+  UNIQUE ("Ονοματεπώνυμο"),
+  PRIMARY KEY ("Ονοματεπώνυμο","Διεύθυνση", "ΤΚ", "Πόλη"));
+
+CREATE TABLE IF NOT EXISTS "Ασφάλεια"."Πελάτες" (
+  "Ονοματεπώνυμο" VARCHAR(45) NOT NULL,
+  "Φύλο" VARCHAR(45) NOT NULL,
+  "Ημερομηνία γέννησης" DATE NOT NULL,
+  "Αριθμός άδειας οδήγησης" VARCHAR(45) NOT NULL,
+  "Τηλέφωνο επικοινωνίας" BIGINT NOT NULL,
+  "Εmail" VARCHAR(45) NOT NULL,
+  UNIQUE ("Εmail"),
+  UNIQUE ("Αριθμός άδειας οδήγησης"),
+  PRIMARY KEY ("Αριθμός άδειας οδήγησης"),
+  CONSTRAINT "fk_Πελάτες_Κατοικία"
+    FOREIGN KEY ("Ονοματεπώνυμο")
+    REFERENCES "Ασφάλεια"."Κατοικία" ("Ονοματεπώνυμο"));
+	
+CREATE TABLE IF NOT EXISTS "Ασφάλεια"."Οδηγοί" (
+  "Ονοματεπώνυμο" VARCHAR(45) NOT NULL,
+  "Φύλο" VARCHAR(45) NOT NULL,
+  "Ημερομηνία γέννησης" DATE NOT NULL,
+  "Αριθμός άδειας οδήγησης" VARCHAR(45) NOT NULL,
+  UNIQUE ("Αριθμός άδειας οδήγησης"),
+  PRIMARY KEY ("Αριθμός άδειας οδήγησης"),
+  CONSTRAINT "fk_Οδηγοί_Κατοικία"
+    FOREIGN KEY ("Ονοματεπώνυμο")
+    REFERENCES "Ασφάλεια"."Κατοικία" ("Ονοματεπώνυμο"));
+
+CREATE TABLE IF NOT EXISTS "Ασφάλεια"."Οχήματα" (
+  "Αριθμός πλαισίου" VARCHAR(45) NOT NULL,
+  "Αριθμός άδειας κυκλοφορίας" VARCHAR(45) NOT NULL,
+  "Χρώμα" VARCHAR(45) NOT NULL,
+  "Ασφαλιστική ομάδα-κατηγορία" VARCHAR(45) NOT NULL,
+  "Κάτοχος οχήματος(Αριθμός άδειας)" VARCHAR(45) NOT NULL,
+  PRIMARY KEY ("Αριθμός άδειας κυκλοφορίας", "Ασφαλιστική ομάδα-κατηγορία"),
+  UNIQUE ("Αριθμός πλαισίου"),
+  UNIQUE ("Αριθμός άδειας κυκλοφορίας"),
+  CONSTRAINT "fk_Οχήματα_Πελάτες"
+    FOREIGN KEY ("Κάτοχος οχήματος(Αριθμός άδειας)")
+    REFERENCES "Ασφάλεια"."Πελάτες" ("Αριθμός άδειας οδήγησης"));
+	
+CREATE TABLE IF NOT EXISTS "Ασφάλεια"."Χαρακτηριστικά Οχήματος" (
+  "Κατηγορία οχήματος" VARCHAR(45) NOT NULL,
+  "Αριθμός πλαισίου" VARCHAR(45) NOT NULL,
+  "Κατασκευαστής" VARCHAR(45) NOT NULL,
+  "Μοντέλο" VARCHAR(45) NOT NULL,
+  "Έτος πρώτης κυκλοφορίας" INT NOT NULL,
+  "Τρέχουσα αξία οχήματος" VARCHAR(15) NOT NULL,
+  UNIQUE ("Αριθμός πλαισίου"),
+  PRIMARY KEY ("Έτος πρώτης κυκλοφορίας", "Μοντέλο", "Αριθμός πλαισίου"),
+  CONSTRAINT "Αριθμός πλαισίου"
+    FOREIGN KEY ("Αριθμός πλαισίου")
+    REFERENCES "Ασφάλεια"."Οχήματα" ("Αριθμός πλαισίου"));
+	
+CREATE TABLE IF NOT EXISTS "Ασφάλεια"."Συμβόλαια" (
+  "Κωδικός Συμβολαίου" VARCHAR(45) NOT NULL,
+  "Ημερομηνία Έναρξης" DATE NOT NULL,
+  "Ημερομηνία Λήξης" DATE NOT NULL,
+  "Κόστος Συμβολαίου" VARCHAR(15) NOT NULL,
+  "Όχημα (Αριθμός Άδειας Κυκλοφορίας)" VARCHAR(45) NOT NULL,
+  "Πελάτης (Αριθμός άδειας οδήγησης)" VARCHAR(45) NOT NULL,
+  PRIMARY KEY ("Κωδικός Συμβολαίου"),
+  UNIQUE ("Κωδικός Συμβολαίου"),
+  CONSTRAINT "fk_Συμβόλαια_Πελάτες"
+    FOREIGN KEY ("Πελάτης (Αριθμός άδειας οδήγησης)")
+    REFERENCES "Ασφάλεια"."Πελάτες" ("Αριθμός άδειας οδήγησης"),
+  CONSTRAINT "fk_Όχημα"
+    FOREIGN KEY ("Όχημα (Αριθμός Άδειας Κυκλοφορίας)")
+    REFERENCES "Ασφάλεια"."Οχήματα" ("Αριθμός άδειας κυκλοφορίας"));
+	
+CREATE TABLE IF NOT EXISTS "Ασφάλεια"."Κωδικοί Συμβολαίων" (
+  "Οδηγοί_Αρ άδειας οδήγησης" VARCHAR(45) NOT NULL,
+  "Συμβόλαια_Κωδικός Συμβολαίου" VARCHAR(45) NOT NULL,
+  "Οχήματα_Αρ άδειας κυκλοφορίας" VARCHAR(45) NOT NULL,
+  UNIQUE ("Οδηγοί_Αρ άδειας οδήγησης","Οχήματα_Αρ άδειας κυκλοφορίας"),
+  PRIMARY KEY ("Συμβόλαια_Κωδικός Συμβολαίου", "Οδηγοί_Αρ άδειας οδήγησης"),
+  CONSTRAINT "fk_Οδηγοί_Αρ άδειας οδήγησης"
+    FOREIGN KEY ("Οδηγοί_Αρ άδειας οδήγησης")
+    REFERENCES "Ασφάλεια"."Οδηγοί" ("Αριθμός άδειας οδήγησης"),
+  CONSTRAINT "fk_Κωδικοί Συμβολαίων_Συμβόλαια"
+    FOREIGN KEY ("Συμβόλαια_Κωδικός Συμβολαίου")
+    REFERENCES "Ασφάλεια"."Συμβόλαια" ("Κωδικός Συμβολαίου"),
+  CONSTRAINT "fk_Κωδικοί Συμβολαίων_Οχήματα"
+    FOREIGN KEY ("Οχήματα_Αρ άδειας κυκλοφορίας")
+    REFERENCES "Ασφάλεια"."Οχήματα" ("Αριθμός άδειας κυκλοφορίας"));
+	
+CREATE TABLE IF NOT EXISTS "Ασφάλεια"."Παρεμβάσεις-Συμβάντα" (
+  "Κωδικός Παράβασης" VARCHAR(100) NOT NULL,
+  "Ημερομηνία και ώρα" TIMESTAMP NOT NULL,
+  "Εμπλεκόμενο Όχημα" VARCHAR(45) NOT NULL,
+  "Εμπλεκόμενος Οδηγός" VARCHAR(45) NOT NULL,
+  "Συνοπτική Περιγραφή" VARCHAR(500) NOT NULL,
+  PRIMARY KEY ("Συνοπτική Περιγραφή"),
+  CONSTRAINT "Εμπλεκόμενος Οδηγός, Όχημα"
+    FOREIGN KEY ("Εμπλεκόμενος Οδηγός","Εμπλεκόμενο Όχημα")
+    REFERENCES "Ασφάλεια"."Κωδικοί Συμβολαίων" ("Οδηγοί_Αρ άδειας οδήγησης","Οχήματα_Αρ άδειας κυκλοφορίας"));
+
+CREATE USER me;
+ALTER USER me WITH PASSWORD '1234';
+GRANT USAGE ON SCHEMA "Ασφάλεια" TO me;
+GRANT SELECT ON ALL TABLES IN SCHEMA "Ασφάλεια" TO me;
